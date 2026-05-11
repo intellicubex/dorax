@@ -1,5 +1,7 @@
 package com.intellicube.dorax.cli;
 
+import com.intellicube.dorax.core.DoraxCore;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -11,6 +13,8 @@ import java.nio.charset.StandardCharsets;
  * Minimal read-eval-print loop for DoraxAgent CLI.
  */
 public final class DoraxRepl {
+
+    private static final DoraxCore CORE = new DoraxCore();
 
     private DoraxRepl() {
     }
@@ -48,7 +52,19 @@ public final class DoraxRepl {
         if (verbose) {
             writer.println("[verbose] 收到: " + trimmed);
         }
-        writer.println("(DoraxAgent) 已记录: " + trimmed + " — 完整对话能力即将接入。");
+        try {
+            writer.println(CORE.handleInput(trimmed));
+        } catch (RuntimeException e) {
+            writer.println("dorax: OpenAI 调用失败: " + messageOf(e));
+        }
         return false;
+    }
+
+    private static String messageOf(RuntimeException e) {
+        String message = e.getMessage();
+        if (message == null || message.trim().isEmpty()) {
+            return e.getClass().getSimpleName();
+        }
+        return message;
     }
 }
