@@ -15,8 +15,8 @@ public final class DoraxBanner {
             "     | | | || | | | | |_) |  / _ \\   >  < ",
             "     |____/  \\___/  |_| \\_\\ /_/ \\_\\ /_/\\_\\",
             "",
-            "        DoraxAgent :: Intelligent Command Line Agent",
-            "        输入指令与智能体交互，输入 exit 或 quit 退出",
+            "     DoraxAgent :: Intelligent Command Line Agent",
+            "     输入指令与智能体交互，输入 exit 或 quit 退出",
             ""
     };
 

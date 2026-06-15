@@ -35,6 +35,27 @@ class OpenAiClientTest {
         assertEquals("custom-compatible-model", params.model().get().asString());
     }
 
+    @Test
+    void streamCompleteRejectsBlankPromptBeforeCallingOpenAi() {
+        OpenAiClient client = new OpenAiClient(failingOpenAiClient(), "custom-compatible-model");
+
+        assertThrows(IllegalArgumentException.class, () -> client.streamComplete("   ", s -> { }));
+    }
+
+    @Test
+    void streamCompletePassesPromptAndModelToResponsesStreamingApi() {
+        OpenAiClient client = new OpenAiClient(capturingOpenAiClient(), "custom-compatible-model");
+
+        CapturedParamsException thrown = assertThrows(
+                CapturedParamsException.class,
+                () -> client.streamComplete("Hello Dorax", s -> { })
+        );
+
+        ResponseCreateParams params = thrown.params;
+        assertEquals("Hello Dorax", params.input().get().asText());
+        assertEquals("custom-compatible-model", params.model().get().asString());
+    }
+
     private static OpenAIClient failingOpenAiClient() {
         return proxy(OpenAIClient.class, (proxy, method, args) -> {
             throw new AssertionError("OpenAI client should not be called for invalid prompts");
@@ -43,7 +64,8 @@ class OpenAiClientTest {
 
     private static OpenAIClient capturingOpenAiClient() {
         ResponseService responseService = proxy(ResponseService.class, (proxy, method, args) -> {
-            if ("create".equals(method.getName()) && args != null && args.length == 1
+            if (("create".equals(method.getName()) || "createStreaming".equals(method.getName()))
+                    && args != null && args.length >= 1
                     && args[0] instanceof ResponseCreateParams) {
                 throw new CapturedParamsException((ResponseCreateParams) args[0]);
             }

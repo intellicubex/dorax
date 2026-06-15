@@ -53,7 +53,11 @@ public final class DoraxRepl {
             writer.println("[verbose] 收到: " + trimmed);
         }
         try {
-            writer.println(CORE.handleInput(trimmed));
+            CORE.streamInput(trimmed, chunk -> {
+                writer.print(chunk);
+                writer.flush();
+            });
+            writer.println();
         } catch (RuntimeException e) {
             writer.println("dorax: OpenAI 调用失败: " + messageOf(e));
         }
